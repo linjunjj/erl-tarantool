@@ -3,7 +3,7 @@
 %% @end
 %%%-------------------------------------------------------------------
 
--module(erl-tarantool_app).
+-module(erl_tarantool_app).
 
 -behaviour(application).
 
@@ -15,7 +15,7 @@
 %%====================================================================
 
 start(_StartType, _StartArgs) ->
-    erl-tarantool_sup:start_link().
+    erl_tarantool_sup:start_link().
 
 %%--------------------------------------------------------------------
 stop(_State) ->
