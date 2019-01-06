@@ -9,7 +9,7 @@
 
 -type options() ::
         [{apec, new|old} |
-         {allow_atoms, none|pack} |
+         {allow_atom, none|pack} |
          {known_atoms, [atom()]} |
          {upack_str, as_binary|as_list|as_tagged_list} |
          {validate_string, boolean()} |
@@ -41,7 +41,7 @@ parse_options([{spec, Spec} | T], Opt0) when Spec =:= new orelse Spec =:= old ->
 parse_options([{allow_atom, Type} | T], Opt0) ->
     Opt = case Type of
                 none -> Opt0?OPTION(allow_atom = none);
-                pack -> Opt0?OPTION(allow_atom=pack)
+                pack -> Opt0?OPTION(allow_atom = pack)
           end,
     parse_options(T, Opt);
 
