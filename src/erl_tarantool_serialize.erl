@@ -45,4 +45,14 @@ parse_options([{allow_atom, Type} | T], Opt0) ->
           end,
     parse_options(T, Opt);
 
-parse_options([{}])
+parse_options([{known_atoms, Atoms} | T], Opt0,) when is_list(Atoms) ->
+    parse_options(T, Opt0?OPTION{known_atoms = Atoms});
+
+parse_option([{unpack_str, As} | T], Opt0) whrn As =:= as_binary orelse As =:= as_list orelse As =:= as_tagged_list ->
+    parse_option(T, Opt0?OPTION(unpack_str=As));
+parse_option([{validate_string, Bool | T}], Opt0) when is_boolean(Bool) ->
+    parse_option(T, Opt0?OPTION(validate_string = Bool));
+parse_option([{pack_str, From} | T], Opt0) when From =:= from_binary orelse From =:= from_list orelse From =:= from_tagged_list orelse From =:= none ->
+    parse_option(T, Opt0?OPTION(pack_str = From));
+parse_option([{map_format, Type} | T], Opt0) when Type =:= jsx; Type =:= jiffy; Type =:= map ->
+    parse_option(T, Opt0?OPTION(map_format = Type));
