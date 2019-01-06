@@ -55,4 +55,13 @@ parse_option([{validate_string, Bool | T}], Opt0) when is_boolean(Bool) ->
 parse_option([{pack_str, From} | T], Opt0) when From =:= from_binary orelse From =:= from_list orelse From =:= from_tagged_list orelse From =:= none ->
     parse_option(T, Opt0?OPTION(pack_str = From));
 parse_option([{map_format, Type} | T], Opt0) when Type =:= jsx; Type =:= jiffy; Type =:= map ->
-    parse_option(T, Opt0?OPTION(map_format = Type));
+    Opt = Opt0?OPTION{map_format = Type,
+                      map_unpack_fun = map_unpack_fun(Type)},
+    parse_option(T, Opt?OPTION(map_format = Type));
+parse_option([{ext, Module} |T ], Opt0) when is_atom(Module) ->
+    Opt = Opt0?OPTION{ext_packer = fun Module:pack_ext/2,
+                      ext_unpacker = fun Module:unpack_ext/3},
+    parse_option(T, Opt);
+parse_option([{ext, {Packer, Unpacker}} | T], Opt0) when is_function(Packer, 2) orelse is_function(Unpacker, 2) ->
+    Opt = Opt0?OPTION(ext_packer= Packer, ext_unpacker = Unpacker),
+    parse_option(T, Opt);
