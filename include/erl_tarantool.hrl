@@ -2,15 +2,6 @@
 -type pack_map_jiffy() :: {[{pack_term(), pack_term()}]}.
 -type pack_map() :: pack_map_jsx() | pack_map_jiffy() | map().
 -type pack_term() :: [pack_term()] | pack_map() | integer() | float() | boolean() | binary() | string() | {string, string()}.
--type options() ::
-        [{apec, new|old} |
-         {allow_atoms, none|pack} |
-         {known_atoms, [atom()]} |
-         {upack_str, as_binary|as_list|as_tagged_list} |
-         {validate_string, boolean()} |
-         {pack_str, from_binary|from_list|from_tagged_list|none} |
-         {map_format, map|jiffy|jsx} |
-         {ext, {ext_packer()}}].
 
 -type format_type() :: jsx | jiffy | map.
 -define(DEFAULT_MAP_UNPACKER_FUN, fun erl_tarantool_serialize:unpack_map/3).
