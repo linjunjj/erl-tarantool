@@ -1,22 +1,25 @@
 -module(erl_tarantool_serialize).
+
 -export([pack/1, pack/2]).
--type pack_map_jsx() :: [{pack_term(), pack_term()} | [{}]].
--type pack_map_jiffy() :: {[{pack_term(), pack_term()}]}.
--type pack_map() :: pack_map_jsx() | pack_map_jiffy() | map().
--type pack_term() :: [pack_term()] | pack_map() | integer() | float() | boolean() | binary() | string() | {string, string()}.
--type options() ::
-        [{apec, new|old} |
-         {allow_atoms, none|pack} |
-         {known_atoms, [atom()]} |
-         {upack_str, as_binary|as_list|as_tagged_list} |
-         {validate_string, boolean()} |
-         {pack_str, form_binary|from_list|from_tagged_list|none} |
-         {map_format, map|jiffy|jsx} |
-         {ext, {}}].
+-include("erl_tarantool.hrl").
+
 -type ext_packer() :: fun( (tuple(), options() )-> {ok, {Type:: byte(), Data:: binary() | {error, any()}}}).
--type format_type() :: jsx|jiffy|map.
+-type ext_unpacker() :: fun((byte(), binary(), options()) -> {ok, pack_term()} | {error, any()}) | 
+                        fun((byte(), binary())-> {ok, pack_term()} | {error, any()}).
+
+-type opt_record() :: ?OPTION{}.
+-type pack_map_unpacker() :: 
+        fun((binary(), non_neg_integer(), opt_record()) -> {pack_map(), binary()} | no_return()).
+-type format_type() :: jsx | jiffy | map.
+-define(DEFAULT_MAP_UNPACKER_FUN, fun unpack_map/3).
+
+-spec pack(pack_type()) ->binary() | {error, _}.
+pack(Term) -> pack(Term, []).
+
+-spec pack(pack_type(), options()) ->binary() | {error, _}.
+pack(Term, Opts) ->
+    Option = 
 
 
-
-
--spec pack(pack_type(), )
+parse_options(Opt) ->
+    parse_options(Opt, )
