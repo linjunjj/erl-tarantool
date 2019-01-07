@@ -7,9 +7,10 @@
 -type ext_unpacker() :: fun((byte(), binary(), options()) -> {ok, pack_term()} | {error, any()}) | 
                         fun((byte(), binary())-> {ok, pack_term()} | {error, any()}).
 
+-type object() :: pack_term().
 -type options() ::
         [{apec, new|old} |
-         {allow_atom, none|pack} |
+         {allow_atom, none|pack } |
          {known_atoms, [atom()]} |
          {upack_str, as_binary|as_list|as_tagged_list} |
          {validate_string, boolean()} |
@@ -22,14 +23,21 @@
         fun((binary(), non_neg_integer(), opt_record()) -> {pack_map(), binary()} | no_return()).
 
 
--spec pack(pack_type()) ->binary() | {error, _}.
+
+-spec pack(object()) -> binary() | {error, _}.
 pack(Term) -> pack(Term, []).
 
--spec pack(pack_type(), options()) ->binary() | {error, _}.
+-spec pack(object(), options()) -> binary() | {error, _}.
 pack(Term, Opts) ->
-    ok;
+    Option = parse_options(Opts),
+    try
+        erl_tarantool_packer:pack(Term, Option)
+    catch
+        throw:Exception -> {error, Exception}
+    end.
 
 %% ++++++++++++++++++++++++++++
+
 parse_options(Opt) ->
     parse_options(Opt, ?OPTION{original_list = Opt}).
 
@@ -48,20 +56,20 @@ parse_options([{allow_atom, Type} | T], Opt0) ->
 parse_options([{known_atoms, Atoms} | T], Opt0,) when is_list(Atoms) ->
     parse_options(T, Opt0?OPTION{known_atoms = Atoms});
 
-parse_option([{unpack_str, As} | T], Opt0) whrn As =:= as_binary orelse As =:= as_list orelse As =:= as_tagged_list ->
-    parse_option(T, Opt0?OPTION(unpack_str=As));
-parse_option([{validate_string, Bool | T}], Opt0) when is_boolean(Bool) ->
-    parse_option(T, Opt0?OPTION(validate_string = Bool));
-parse_option([{pack_str, From} | T], Opt0) when From =:= from_binary orelse From =:= from_list orelse From =:= from_tagged_list orelse From =:= none ->
-    parse_option(T, Opt0?OPTION(pack_str = From));
-parse_option([{map_format, Type} | T], Opt0) when Type =:= jsx; Type =:= jiffy; Type =:= map ->
+parse_options([{unpack_str, As} | T], Opt0) whrn As =:= as_binary orelse As =:= as_list orelse As =:= as_tagged_list ->
+    parse_options(T, Opt0?OPTION(unpack_str=As));
+parse_options([{validate_string, Bool | T}], Opt0) when is_boolean(Bool) ->
+    parse_options(T, Opt0?OPTION(validate_string = Bool));
+parse_options([{pack_str, From} | T], Opt0) when From =:= from_binary orelse From =:= from_list orelse From =:= from_tagged_list orelse From =:= none ->
+    parse_options(T, Opt0?OPTION(pack_str = From));
+parse_options([{map_format, Type} | T], Opt0) when Type =:= jsx; Type =:= jiffy; Type =:= map ->
     Opt = Opt0?OPTION{map_format = Type,
                       map_unpack_fun = map_unpack_fun(Type)},
-    parse_option(T, Opt?OPTION(map_format = Type));
-parse_option([{ext, Module} |T ], Opt0) when is_atom(Module) ->
+    parse_options(T, Opt?OPTION(map_format = Type));
+parse_options([{ext, Module} |T ], Opt0) when is_atom(Module) ->
     Opt = Opt0?OPTION{ext_packer = fun Module:pack_ext/2,
                       ext_unpacker = fun Module:unpack_ext/3},
-    parse_option(T, Opt);
-parse_option([{ext, {Packer, Unpacker}} | T], Opt0) when is_function(Packer, 2) orelse is_function(Unpacker, 2) ->
+    parse_options(T, Opt);
+parse_options([{ext, {Packer, Unpacker}} | T], Opt0) when is_function(Packer, 2) orelse is_function(Unpacker, 2) ->
     Opt = Opt0?OPTION(ext_packer= Packer, ext_unpacker = Unpacker),
-    parse_option(T, Opt);
+    parse_options(T, Opt);
