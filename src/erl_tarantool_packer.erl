@@ -43,6 +43,21 @@ pack_uint(N) ->
 
 %++++++++++++++
 %% deal with float data type
--spec pack_double(float()) ->binary
+-spec pack_double(float()) -> binary()
 pack_double(F) ->
     <<16#CB:8, F:64/big-float-uint:1>>.
+
+%+++++++++++
+%% deal with raw data type
+-spec pack_raw(binary()) -> binary()
+pack_raw(Bin) ->
+    case byte_size(Bin) of
+        Len when Len < 256 ->
+            <<16#C4:8, Len:8/big-unsigned-integer-unit:1, Bin/binary>>;
+        Len when Len < 16#10000 ->
+            <<16#DA:8, Len:16/big-unsigned-integer-unit:1, Bin/binary>>;
+        Len when Len < 16#100000000 ->
+            <<16#DB:8, Len:32/big-unsigned-integer-unit:1, Bin/binary>>;
+        _ ->
+            throw({badarg, Bin})
+        end.
